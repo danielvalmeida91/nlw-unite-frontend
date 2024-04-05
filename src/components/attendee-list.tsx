@@ -1,6 +1,33 @@
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal, Search } from 'lucide-react'
+import { IconButton } from './icon-button'
+import { Table } from './table/table'
+import { TableHeader } from './table/table-header'
+import { TableCell } from './table/table-cell'
+import { TableRow } from './table/table-row'
+import { attendees } from '../data/attendee'
+import { formatDistance } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { useState } from 'react'
 
 export function AttendeeList() {
+  const [page , setPage] = useState(1)
+  const totalPages = Math.ceil(attendees.length/10)
+
+  const handleNext = () => {
+    setPage(page => page + 1)
+  }
+
+  const handlePrev = () => {
+    setPage(page => page - 1)
+  }
+
+  const handleFirst = () => {
+    setPage(1)
+  }
+
+  const handleLast = () => {
+    setPage(totalPages)
+  }
   return (
     <div className='flex flex-col gap-4'>
     <div className='flex gap-3 items-center'>
@@ -11,42 +38,42 @@ export function AttendeeList() {
     </div>
   </div>
  
-  <div className='border border-white/10 rounded-lg'>
-  <table className='w-full'>
+  <Table>
     <thead className='border-b border-white/10'>
       <tr>
-        <th style={{ width: 48}} className='py-3 px-4 text-sm font-semibold text-left'>
+        <TableHeader style={{ width: 48}}>
           <input type='checkbox' className='size-4 bg-black/20 rounded border border-white/10' />
-        </th>
-        <th className='py-3 px-4 text-sm font-semibold text-left'>Código</th>
-        <th className='py-3 px-4 text-sm font-semibold text-left'>Participantes</th>
-        <th className='py-3 px-4 text-sm font-semibold text-left'>Data de inscrição</th>
-        <th className='py-3 px-4 text-sm font-semibold text-left'>Data de check-in</th>
-        <th style={{ width: 64}} className='py-3 px-4 text-sm font-semibold text-left'></th>
+        </TableHeader>
+        <TableHeader>Código</TableHeader>
+        <TableHeader>Participantes</TableHeader>
+        <TableHeader>Data de inscrição</TableHeader>
+        <TableHeader>Data de check-in</TableHeader>
+        <TableHeader style={{ width: 64}}></TableHeader>
       </tr>
     </thead>
     <tbody>
-      {Array.from({length: 8}).map((_, i) => {
+      {attendees.slice((page - 1) * 10, page * 10).map((attendee) => {
+        const { id, name, email, createdAt, checkInAt } = attendee
         return(
-          <tr className='border-b border-white/10 hover:bg-white/5' key={i}>
-            <td className='py-3 px-4 text-sm text-zinc-300'>
+          <TableRow key={id}>
+            <TableCell>
               <input type="checkbox" className='size-4 bg-black/20 rounded border border-white/10' />
-            </td>
-            <td className='py-3 px-4 text-sm text-zinc-300'>12383</td>
-            <td className='py-3 px-4 text-sm text-zinc-300'>
+            </TableCell>
+            <TableCell>{id}</TableCell>
+            <TableCell>
               <div className='flex flex-col gap-1'>
-                <span className='font-semibold text-white'>Daniel Ventura de Almeida</span>
-                <span>danielvalmeida91@gmail.com</span>
+                <span className='font-semibold text-white'>{name}</span>
+                <span>{email}</span>
               </div>
-            </td>
-            <td className='py-3 px-4 text-sm text-zinc-300'>7 dias atrás</td>
-            <td className='py-3 px-4 text-sm text-zinc-300'>3 dias atrás</td>
-            <td className='py-3 px-4 text-sm text-zinc-300'>
-              <button className='bg-white/10 border border-white/10 rounded-md p-1.5'>
+            </TableCell>
+            <TableCell>{formatDistance(createdAt, new Date(), { locale: ptBR, addSuffix: true })}</TableCell>
+            <TableCell>{formatDistance(checkInAt, new Date(), { locale: ptBR, addSuffix: true })}</TableCell>
+            <TableCell>
+              <IconButton className='bg-black/20 border border-white/10 rounded-md p-1.5'>
                 <MoreHorizontal className='size-4' />
-              </button>
-            </td>
-          </tr>
+              </IconButton>
+            </TableCell>
+          </TableRow>
         )
       }
         
@@ -54,35 +81,34 @@ export function AttendeeList() {
     </tbody>
     <tfoot>
       <tr>
-        <td className='py-3 px-4 text-sm text-zinc-300 text-left' colSpan={3} >
-          Motrando 10 de 228 itens
-        </td>
-        <td className='py-3 px-4 text-sm text-zinc-300 text-right' colSpan={3}>
+        <TableCell colSpan={3} >
+          {`Mostrando ${page * 10} de ${attendees.length} itens`}
+        </TableCell>
+        <TableCell className='text-right' colSpan={3}>
           <div className='inline-flex items-center gap-8'>
             <span>
-              Página 1 de 23
+              {`Página ${page ?? '-'} de ${Math.ceil(attendees.length/10)}`}
             </span>
 
             <div className='flex gap-1.5'>
-              <button className='bg-white/10 border border-white/10 rounded-md p-1.5'>
+              <IconButton onClick={handleFirst} variant disabled={page === 1}>
                 <ChevronsLeft className='size-4' />
-              </button>
-              <button className='bg-white/10 border border-white/10 rounded-md p-1.5'>
+              </IconButton>
+              <IconButton onClick={handlePrev} variant disabled={page === 1}>
                 <ChevronLeft className='size-4' />
-              </button>
-              <button className='bg-white/10 border border-white/10 rounded-md p-1.5'>
+              </IconButton>
+              <IconButton onClick={handleNext} variant disabled={page === totalPages}>
                 <ChevronRight className='size-4' />
-              </button>
-              <button className='bg-white/10 border border-white/10 rounded-md p-1.5'>
+              </IconButton>
+              <IconButton onClick={handleLast} variant disabled={page === totalPages}>
                 <ChevronsRight className='size-4' />
-              </button>
+              </IconButton>
             </div>
           </div>
-        </td>
+        </TableCell>
       </tr>
     </tfoot>
-  </table>
-  </div>
+  </Table>
   </div>
 
   )
